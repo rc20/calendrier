@@ -5,13 +5,13 @@ module Calendrier
     #numbers of days in the week
     DAYS_IN_WEEK = 7
     
-    # renvoie the beginning of the event in timestamp
+    # return the beginning of event in timestamp
     def get_event_stamp(event, options = {})
       #tests events
       if event.respond_to?(:year) && event.respond_to?(:month) && event.respond_to?(:day)
         #affect the timestamp
         ret = Time.local(event[:year], event[:month], event[:day]).to_i  
-      #otherwise event include date of beginning and date end 
+      #otherwise event include date of beginning and date of end 
       elsif event.respond_to?(:begin_date) && event.respond_to?(:end_date)
         if options[:end_date]
           ret = event[:end_date]
@@ -78,7 +78,7 @@ module Calendrier
               #we add the number of day in the table     
               days_arr << day_counter
             else
-              #add at the end of table
+              #add x at the end of table
               days_arr << 'x'
             end
           end
@@ -86,7 +86,6 @@ module Calendrier
       end
       
       #preparation events for each journey    
-      
       #sorted events
       events_sorted = events.sort { |x,y| get_event_stamp(x) <=> get_event_stamp(y) } unless events.nil?
       
@@ -102,7 +101,7 @@ module Calendrier
         #date end
         end_date = Time.at(get_event_stamp(event, :end_date => true))
         
-        
+        #test year month and day
         if (begin_date.year == end_date.year && begin_date.month == end_date.month && begin_date.day == end_date.day)
           #event of journey
           events_by_days[begin_date.day] = [] if events_by_days[begin_date.day].nil?
@@ -117,7 +116,6 @@ module Calendrier
         end
       end
        
-      
       #display calendar
       content_tag(:table, nil) do    
   
@@ -156,8 +154,7 @@ module Calendrier
                     #concatenation of title and the event
                     title = link_to "#{event.title}", event
                     #return title of the event
-                    event_content = content_tag(:li, title, :class => event.category)
-                      
+                    event_content = content_tag(:li, title, :class => event.category)                     
                     #test if content cell is empty
                     if cell_sub_content.nil?
                       cell_sub_content = event_content
@@ -168,13 +165,13 @@ module Calendrier
                 end
               end
   
-              #we generate markers
+              #generate markers
               content_tag(:div, nil) do
                 content_tag(:span, one_day) + cell_sub_content
               end
             end
             sub_content = content_tag(:td, cell_content)
-            #if test if null
+            #if test is null
             if week_content.nil?
               week_content = sub_content 
             else
@@ -182,7 +179,7 @@ module Calendrier
             end
           end
   
-          #we put all the 'td' in 'tr'
+          #put all the 'td' in 'tr'
           sub_content = content_tag(:tr, week_content)
     
           #test if null
@@ -192,7 +189,7 @@ module Calendrier
             month_content << sub_content
           end
         end
-        #return the result
+        #return result
         month_content
       end 
     end       
