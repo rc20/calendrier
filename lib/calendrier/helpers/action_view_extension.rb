@@ -24,7 +24,7 @@ module Calendrier
     end
     
     #affichage d'un calendrier
-    def calendar_helper(events = nil, options = {})
+    def calendrier(events = nil, options = {})
   
       #option année
       year = options[:year] || Time.now.year
@@ -135,8 +135,6 @@ module Calendrier
             cell_content = content_tag(:ul, nil) do
               cell_sub_content = nil
   
-              
-            
               #test du jour
               if one_day.is_a?(Integer) && !events_by_days[one_day].nil?
                 events_by_days[one_day].each do |event|
@@ -149,8 +147,6 @@ module Calendrier
                   if event.respond_to?(:begin_date) && event.respond_to?(:end_date) && one_day.is_a?(Integer)
                     # timestamp du jour 'one_day' a 00h00
                     now = Time.local(year, month, one_day).to_i
-  logger.debug "TYPE ::   "
-  logger.debug event.begin_date.class
                     ok = true if event.begin_date.to_i <= now && now <= event.end_date.to_i 
                   end         
                         
@@ -198,22 +194,6 @@ module Calendrier
         month_content
       end 
     end
-    
-    #on génére le calendrier
-    def calendar_helper_old(options = {})
-      #génération du tableau
-      content_tag(:table, nil, :class => 'super_class') do
-        content_tag(:tr, nil, :class => 'class_dedans') do
-          content = nil
-          7.times do
-            subcontent = content_tag(:td, 'numero de jour|')
-            content = subcontent if content.nil?
-            content << subcontent unless content.nil?
-          end
-          content
-        end
-      end
-    end
-      
+          
   end
 end

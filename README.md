@@ -1,6 +1,7 @@
 # Calendrier
 
-TODO: Write a gem description
+A simple helper for creating an HTML calendar. 
+It allows create events too.
 
 ## Installation
 
@@ -16,11 +17,14 @@ Or install it yourself as:
 
     $ gem install calendrier
 
-## Usage
 
-TODO: Write usage instructions here
+##CODE
 
-## Contributing
+##AUTHORS
+
+Romain Castel
+
+
 
 1. Fork it
 2. Create your feature branch (`git checkout -b my-new-feature`)
