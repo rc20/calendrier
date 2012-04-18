@@ -1,7 +1,6 @@
 module Calendrier
   module ActionViewExtension
   
-  
     #numbers of days in the week
     DAYS_IN_WEEK = 7
     

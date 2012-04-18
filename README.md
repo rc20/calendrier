@@ -7,7 +7,6 @@ It allows create events too.
 
 ##SYNOPSIS:
 
-
     # Simple
     <%= calendrier(@events, :year => 2012, :month => 4) %>  
 
