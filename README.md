@@ -3,13 +3,20 @@
 ##DESCRIPTION
 
 A simple helper for creating an HTML calendar. 
-It allows create events too.
+It allows to display events.
 
 ##SYNOPSIS:
 
-    # Simple
+    # Simple without events
+    <%= calendrier(nil, :year => 2012, :month => 4) %>  
+
+    # Simple with events
     <%= calendrier(@events, :year => 2012, :month => 4) %>  
 
+Events could be a mix of many different objects, but each of them should `respond_to?` one of the following method sets :
+
+  * `year`, `month`, `day`
+  * `begin_date`, `end_date`
 
 ## INSTALLATION
 
