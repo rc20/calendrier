@@ -14,8 +14,8 @@ It allows to display events.
     <%= calendrier(@events, :year => 2012, :month => 4) %>  
 
 Events could be a mix of many different objects, but each of them should `respond_to?` one of the following method sets :
-  - `year`, `month`, `day`
-  - `begin_date`, `end_date`
+  * `year`, `month`, `day`
+  * `begin_date`, `end_date`
 
 ## INSTALLATION
 
