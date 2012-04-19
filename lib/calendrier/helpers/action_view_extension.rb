@@ -1,8 +1,11 @@
-module Calendrier
+module Calendrier 
   module ActionViewExtension
+
   
     #numbers of days in the week
     DAYS_IN_WEEK = 7
+    
+    
     
     # return the beginning of event in timestamp
     def get_event_stamp(event, options = {})
@@ -21,6 +24,12 @@ module Calendrier
       #return the result
       return ret
     end
+
+    def shift_week_days(wday, index)
+      wday -= index
+      wday += DAYS_IN_WEEK if wday < 0
+    end
+
     
     #display calendar
     def calendrier(events = nil, options = {})
@@ -33,10 +42,14 @@ module Calendrier
       
       #option day
       day = options[:day] || Time.now.day
-      
+       
+      #si commence un lundi
+      start_on_monday = options[:start_on_monday]
+    
       #first day of month
       first_day_of_month = Time.local(year, month, 1).wday
-      
+      first_day_of_month = shift_week_days(first_day_of_month, 1) if start_on_monday
+       
       #numbers days in month
       days_in_month = Time.local(year, month, 1).end_of_month.day   
       
@@ -114,12 +127,28 @@ module Calendrier
           end
         end
       end
-       
+      
       #display calendar
-      content_tag(:table, nil) do    
-  
+      content_tag(:table, nil) do         
         month_content = nil
+              
+
+      #display days of week
+      days_name = t('date.day_names')
         
+      #utilisation méthode dub
+      days_name = days_name.dup
+      
+      if start_on_monday
+        1.times do
+          days_name.push(days_name.shift)
+        end
+      end
+
+      #generate entete
+      month_content = content_tag(:thead, content_tag(:tr, days_name.collect { |h| content_tag('th',h) }.join.html_safe ))
+      
+      
         #while length is positive
         while days_arr.length > 0
           week_content =  nil
