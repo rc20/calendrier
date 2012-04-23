@@ -79,10 +79,7 @@ module Calendrier
           days_name.push(days_name.shift)
         end
       end
-  
-  
-#  content_tag(:td, 'rdv') + content_tag(:td, 'formation') + content_tag(:td, 'conference') + content_tag(:td, 'reunion') + content_tag(:td, 'bilan') + content_tag(:td, 'test') + content_tag(:td, 'test')          
-
+          
   
   
       return content_tag(:table, nil) do
@@ -100,17 +97,55 @@ module Calendrier
               #on retourne 7 fois le jour  
               DAYS_IN_WEEK.times do |index|
                 #on incrémente les jours de la semaine
-# puts lundi + index
-                hour_content << content_tag(:td, lundi + index)
+                hour_content << content_tag(:td, 'test')
               end
+              #renvoie
               hour_content
             end
-            suba_content << sub_content unless suba_content.nil?              
+            #si subcontent est vide on le mets dans suba_content
+            suba_content << sub_content unless suba_content.nil?
+            #si suba_content est vide on remplace suba_content par sub_content              
             suba_content = sub_content if suba_content.nil?
           end
+          
+          #preparation events for each journey    
+          #sorted events
+          events_sorted = events.sort { |x,y| get_event_stamp(x) <=> get_event_stamp(y) } unless events.nil?
+          
+          events_by_days = []
+          
+          #empty table
+          events_sorted = [] if events_sorted.nil?
+        
+          events_sorted.each do |event|
+            #test if courant time is between "begin_stamp" and "end_stamp"
+            #date beginning
+            begin_date = Time.at(get_event_stamp(event))
+            #date end
+            end_date = Time.at(get_event_stamp(event, :end_date => true))
+            
+            #test year month and day
+            if (begin_date.year == end_date.year && begin_date.month == end_date.month && begin_date.day == end_date.day)
+              #event of journey
+              events_by_days[begin_date.day] = [] if events_by_days[begin_date.day].nil?
+              events_by_days[begin_date.day] << event
+            else
+              #event that during in time
+              (begin_date.day..end_date.day).each do |event_day|
+                events_by_days[event_day] = [] if events_by_days[event_day].nil?
+                events_by_days[event_day] << event
+                logger.debug event_day
+              end
+            end
+          end
+
           suba_content
         end 
+              
       end
+      
+      
+      
               
       
 ############################### WEEK
@@ -207,10 +242,8 @@ module Calendrier
               
         #display days of week
         days_name = t('date.day_names').dup
-          
-        #utilisation méthode dub
-#        days_name = days_name.dup
         
+        #if begin by a Monday
         if start_on_monday
           1.times do
             days_name.push(days_name.shift)
