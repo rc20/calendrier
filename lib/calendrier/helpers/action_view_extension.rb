@@ -4,7 +4,8 @@ module Calendrier
   
     #numbers of days in the week
     DAYS_IN_WEEK = 7
-    
+    #numbers of hours in day
+    HOURS_IN_DAY = 24
     
     
     # return the beginning of event in timestamp
@@ -25,15 +26,31 @@ module Calendrier
       return ret
     end
 
+    #decalage
     def shift_week_days(wday, index)
       wday -= index
       wday += DAYS_IN_WEEK if wday < 0
     end
 
-    
+    #récupère jour
+    def get_day(current, wday)  
+      if wday == 0
+        #si le jour est un dimanche on incrémente
+        increment = 7
+      else
+        #sinon on incrémonte pas
+        increment = 0
+      end
+      #decalage si on arrive en fin de mois
+      days_shift = (current.wday - wday)
+      #jour courant
+      current - days_shift + increment
+    end
+
+
     #display calendar
     def calendrier(events = nil, options = {})
-  
+
       #option year
       year = options[:year] || Time.now.year
   
@@ -42,10 +59,66 @@ module Calendrier
       
       #option day
       day = options[:day] || Time.now.day
-       
+  
+      #option display
+      display = options[:display] || :month
+      
       #si commence un lundi
       start_on_monday = options[:start_on_monday]
-    
+
+      #####
+
+      #affichage de la semaine
+      current = Date.new(year, month, day)
+      
+      #display days of week
+      days_name = t('date.day_names').dup
+          
+      if start_on_monday
+        1.times do
+          days_name.push(days_name.shift)
+        end
+      end
+  
+  
+#  content_tag(:td, 'rdv') + content_tag(:td, 'formation') + content_tag(:td, 'conference') + content_tag(:td, 'reunion') + content_tag(:td, 'bilan') + content_tag(:td, 'test') + content_tag(:td, 'test')          
+
+  
+  
+      return content_tag(:table, nil) do
+        #generate entete
+        month_content = content_tag(:thead, content_tag(:tr, content_tag('th', 'horaires') + days_name.collect { |h| content_tag('th',h) }.join.html_safe ))     
+
+        lundi = get_day(current, 1) 
+        month_content << content_tag(:tbody, nil) do
+          suba_content = nil
+          #de 0 à 24h exclut
+          (0...HOURS_IN_DAY).each do |hour_index|         
+            sub_content = content_tag(:tr, nil) do
+              hour_content = content_tag(:td, hour_index)    
+
+              #on retourne 7 fois le jour  
+              DAYS_IN_WEEK.times do |index|
+                #on incrémente les jours de la semaine
+# puts lundi + index
+                hour_content << content_tag(:td, lundi + index)
+              end
+              hour_content
+            end
+            suba_content << sub_content unless suba_content.nil?              
+            suba_content = sub_content if suba_content.nil?
+          end
+          suba_content
+        end 
+      end
+              
+      
+############################### WEEK
+      return
+############################### MONTH        
+
+
+
       #first day of month
       first_day_of_month = Time.local(year, month, 1).wday
       first_day_of_month = shift_week_days(first_day_of_month, 1) if start_on_monday
@@ -88,7 +161,7 @@ module Calendrier
             #if we are always in the calendar
             if day_counter <= days_in_month    
               #we add the number of day in the table     
-              days_arr << day_counter
+               days_arr << day_counter
             else
               #add x at the end of table
               days_arr << 'x'
@@ -129,25 +202,23 @@ module Calendrier
       end
       
       #display calendar
-      content_tag(:table, nil) do         
+      content_tag(:table, nil) do
         month_content = nil
               
-
-      #display days of week
-      days_name = t('date.day_names')
+        #display days of week
+        days_name = t('date.day_names').dup
+          
+        #utilisation méthode dub
+#        days_name = days_name.dup
         
-      #utilisation méthode dub
-      days_name = days_name.dup
-      
-      if start_on_monday
-        1.times do
-          days_name.push(days_name.shift)
+        if start_on_monday
+          1.times do
+            days_name.push(days_name.shift)
+          end
         end
-      end
-
-      #generate entete
-      month_content = content_tag(:thead, content_tag(:tr, days_name.collect { |h| content_tag('th',h) }.join.html_safe ))
-      
+  
+        #generate entete
+        month_content = content_tag(:thead, content_tag(:tr, days_name.collect { |h| content_tag('th',h) }.join.html_safe ))     
       
         #while length is positive
         while days_arr.length > 0
@@ -172,7 +243,7 @@ module Calendrier
                   end
                   logger.debug "ici"
                   if event.respond_to?(:begin_date) && event.respond_to?(:end_date) && one_day.is_a?(Integer)
-                    # timestamp du jour 'one_day' a 00h00
+                    # timestamp du jour 'one_day' à 00h00
                     now = Time.local(year, month, one_day).to_i
                     ok = true if event.begin_date.to_i <= now && now <= event.end_date.to_i 
                   end         
