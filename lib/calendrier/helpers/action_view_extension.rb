@@ -13,7 +13,7 @@ module Calendrier
       #tests events
       if event.respond_to?(:year) && event.respond_to?(:month) && event.respond_to?(:day)
         #affect the timestamp
-        ret = Time.local(event[:year], event[:month], event[:day]).to_i  
+        ret = Time.utc(event[:year], event[:month], event[:day]).to_i  
       #otherwise event include date of beginning and date of end 
       elsif event.respond_to?(:begin_date) && event.respond_to?(:end_date)
         if options[:end_date]
@@ -84,20 +84,108 @@ module Calendrier
   
       return content_tag(:table, nil) do
         #generate entete
-        month_content = content_tag(:thead, content_tag(:tr, content_tag('th', 'horaires') + days_name.collect { |h| content_tag('th',h) }.join.html_safe ))     
-
         lundi = get_day(current, 1) 
+
+        #month_content = content_tag(:thead, content_tag(:tr, content_tag('th', 'horaires') + days_name.collect { |h| content_tag('th', h ) }.join.html_safe ))     
+        # %w(a b c).enum_for(:each_with_index).collect { |o, i| "#{i}: #{o}" }
+        # returns: ["0: a", "1: b", "2: c"]
+    
+        month_content = content_tag(:thead, content_tag(:tr, content_tag('th', 'horaires') + days_name.enum_for(:each_with_index).collect { |day_name, index| content_tag('th', "#{day_name} #{(lundi + index).to_s}" ) }.join.html_safe ))     
+
         month_content << content_tag(:tbody, nil) do
           suba_content = nil
+          
+
+          
+          
+        ############################# 
+        
+
+        #preparation events for each journey    
+        #sorted events
+        events_sorted = events.sort { |x,y| get_event_stamp(x) <=> get_event_stamp(y) } unless events.nil?
+        
+
+        ############################
+  
+      
+      
+      
+
+        ############################
+            
+          
           #de 0 à 24h exclut
           (0...HOURS_IN_DAY).each do |hour_index|         
             sub_content = content_tag(:tr, nil) do
-              hour_content = content_tag(:td, hour_index)    
+              hour_content = content_tag(:td, hour_index)
+
+
 
               #on retourne 7 fois le jour  
-              DAYS_IN_WEEK.times do |index|
+              DAYS_IN_WEEK.times do |index| # 0 1 2 3 4 5 6
+                cell_sub_content = nil
+                events_sorted.each do |event|
+
+                  one_day = (lundi + index).day
+
+                  #condition on display events        
+                  if event.respond_to?(:year) && event.respond_to?(:month) && event.respond_to?(:day) && one_day.is_a?(Integer)
+                    if display == :week
+                      # week
+                      ok = true if event.year == year && event.month == month && event.day == one_day
+                    else
+                      # month
+                      ok = true if event.year == year && event.month == month && event.day == one_day
+                    end
+                  end
+
+                  #test date de début et date de fin
+                  if event.respond_to?(:begin_date) && event.respond_to?(:end_date) && one_day.is_a?(Integer)
+                    #si on choisit la semaine
+                    if display == :week
+                      # week
+                      cell_begin = Time.utc(year, month, one_day, hour_index).to_i
+                      cell_end = cell_begin + 3600
+                    
+                      #si l'événement commence avant l'interval et se termine après l'interval
+                      if event.begin_date.to_i <= cell_begin && cell_end <= event.end_date.to_i 
+                        ok = true
+                      #sinon si l'événement commence après l'interval et se termine dans l'interval
+                      elsif event.begin_date.to_i >= cell_begin && event.end_date.to_i <= cell_end 
+                        ok = true
+                      #sinon si l'événement commence avant l'interval et se termine dans l'interval
+                      elsif event.begin_date.to_i <= cell_begin  && event.end_date.to_i >= cell_end 
+                        ok = true
+                      end   
+   
+                    else
+                      #sinon c'est le mois
+                      # month
+                      #timestamp du jour 'one_day' à 00h00
+                      now = Time.utc(year, month, one_day).to_i
+                      ok = true if event.begin_date.to_i <= now && now <= event.end_date.to_i 
+                    end
+                  end  
+                       
+                  if ok
+                    #concatenation of title and the event
+                    title = link_to "#{event.title}", event
+                    #return title of the event
+                    event_content = content_tag(:li, title, :class => event.category)                     
+                    #test if content cell is empty
+                    if cell_sub_content.nil?
+                      cell_sub_content = event_content
+                    else
+                      cell_sub_content << event_content
+                    end
+                  end
+                end
+
+                cell_content = content_tag(:ul, cell_sub_content) unless cell_sub_content.nil?
+
                 #on incrémente les jours de la semaine
-                hour_content << content_tag(:td, 'test')
+                hour_content << content_tag(:td, cell_content)
               end
               #renvoie
               hour_content
@@ -107,47 +195,11 @@ module Calendrier
             #si suba_content est vide on remplace suba_content par sub_content              
             suba_content = sub_content if suba_content.nil?
           end
-          
-          #preparation events for each journey    
-          #sorted events
-          events_sorted = events.sort { |x,y| get_event_stamp(x) <=> get_event_stamp(y) } unless events.nil?
-          
-          events_by_days = []
-          
-          #empty table
-          events_sorted = [] if events_sorted.nil?
-        
-          events_sorted.each do |event|
-            #test if courant time is between "begin_stamp" and "end_stamp"
-            #date beginning
-            begin_date = Time.at(get_event_stamp(event))
-            #date end
-            end_date = Time.at(get_event_stamp(event, :end_date => true))
-            
-            #test year month and day
-            if (begin_date.year == end_date.year && begin_date.month == end_date.month && begin_date.day == end_date.day)
-              #event of journey
-              events_by_days[begin_date.day] = [] if events_by_days[begin_date.day].nil?
-              events_by_days[begin_date.day] << event
-            else
-              #event that during in time
-              (begin_date.day..end_date.day).each do |event_day|
-                events_by_days[event_day] = [] if events_by_days[event_day].nil?
-                events_by_days[event_day] << event
-                logger.debug event_day
-              end
-            end
-          end
-
           suba_content
-        end 
-              
+        end  
+                 
       end
-      
-      
-      
-              
-      
+            
 ############################### WEEK
       return
 ############################### MONTH        
@@ -155,11 +207,11 @@ module Calendrier
 
 
       #first day of month
-      first_day_of_month = Time.local(year, month, 1).wday
+      first_day_of_month = Time.utc(year, month, 1).wday
       first_day_of_month = shift_week_days(first_day_of_month, 1) if start_on_monday
        
       #numbers days in month
-      days_in_month = Time.local(year, month, 1).end_of_month.day   
+      days_in_month = Time.utc(year, month, 1).end_of_month.day   
       
       #numbers week in month
       days = (days_in_month + first_day_of_month)
@@ -274,10 +326,11 @@ module Calendrier
                   if event.respond_to?(:year) && event.respond_to?(:month) && event.respond_to?(:day) && one_day.is_a?(Integer)
                     ok = true if event.year == year && event.month == month && event.day == one_day
                   end
-                  logger.debug "ici"
+                  
+                  #test date de début et date de fin
                   if event.respond_to?(:begin_date) && event.respond_to?(:end_date) && one_day.is_a?(Integer)
-                    # timestamp du jour 'one_day' à 00h00
-                    now = Time.local(year, month, one_day).to_i
+                    #timestamp du jour 'one_day' à 00h00
+                    now = Time.utc(year, month, one_day).to_i
                     ok = true if event.begin_date.to_i <= now && now <= event.end_date.to_i 
                   end         
                         
@@ -294,9 +347,9 @@ module Calendrier
                       cell_sub_content << event_content
                     end
                   end                   
-                end
               end
-  
+            end
+              
               #generate markers
               content_tag(:div, nil) do
                 content_tag(:span, one_day) + cell_sub_content
