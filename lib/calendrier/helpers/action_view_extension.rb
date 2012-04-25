@@ -73,16 +73,19 @@ module Calendrier
       
       #display days of week
       days_name = t('date.day_names').dup
-          
+      
+      
+      #on teste si c'est un lundi
       if start_on_monday
         1.times do
           days_name.push(days_name.shift)
         end
       end
-          
-  
-  
-      return content_tag(:table, nil) do
+        
+        #si on choisit d'afficher le mois
+        if display == :week
+        #on teste si on choisit la semaine  
+        return content_tag(:table, nil) do
         #generate entete
         lundi = get_day(current, 1) 
 
@@ -95,25 +98,11 @@ module Calendrier
         month_content << content_tag(:tbody, nil) do
           suba_content = nil
           
-
-          
-          
-        ############################# 
         
-
         #preparation events for each journey    
         #sorted events
         events_sorted = events.sort { |x,y| get_event_stamp(x) <=> get_event_stamp(y) } unless events.nil?
         
-
-        ############################
-  
-      
-      
-      
-
-        ############################
-            
           
           #de 0 à 24h exclut
           (0...HOURS_IN_DAY).each do |hour_index|         
@@ -199,11 +188,11 @@ module Calendrier
         end  
                  
       end
-            
+     
 ############################### WEEK
-      return
+     return
 ############################### MONTH        
-
+end
 
 
       #first day of month
