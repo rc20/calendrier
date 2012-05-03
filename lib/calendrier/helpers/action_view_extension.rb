@@ -9,7 +9,7 @@ module Calendrier
     DIMANCHE = 0
     LUNDI = 1
 
-    # return the beginning of event in timestamp
+    #return the beginning of event in timestamp
     def get_event_stamp(event, options = {})
       #tests events
       if event.respond_to?(:year) && event.respond_to?(:month) && event.respond_to?(:day)
@@ -17,102 +17,102 @@ module Calendrier
         ret = Time.utc(event[:year], event[:month], event[:day]).to_i
       #otherwise event include date of beginning and date of end
       elsif event.respond_to?(:begin_date) && event.respond_to?(:end_date)
+        #if end_date
         if options[:end_date]
+          #affect end_date
           ret = event[:end_date]
         else
+          #affect begin_date
           ret = event[:begin_date]
         end
       end
-      #return the result
+      #return result
       return ret
     end
 
-    #decalage
+    #decalage of days
     def shift_week_days(wday, index)
       wday -= index
+      #add + 7 time-lag
       wday += DAYS_IN_WEEK if wday < 0
+      #return time-lag
       return wday
     end
 
-    #récupère jour
+    #recover day
     def get_day(current, wday)
-      #decalage si on arrive en fin de mois
+      #time-lag if end of month
       days_shift = (current.wday - wday)
-      #jour courant
+      #current day
       current - days_shift
     end
 
-
-    #test display event
+    #display event
     def display_event?(event, current_date, display)
       #condition on display events
       if event.respond_to?(:year) && event.respond_to?(:month) && event.respond_to?(:day)
-        #si on choisit la semaine
+        #if choose the week, we compare year, month and day
         if display == :week
-          #week
           ok = true if event.year == current_date.year && event.month == current_date.month && event.day == current_date.day
         else
-          #month
+          #else if month
           ok = true if event.year == current_date.year && event.month == current_date.month && event.day == current_date.day
         end
       end
 
-      #test date de début et date de fin
+      #test date begin and end date
+      #test if event has an determine duree
       if event.respond_to?(:begin_date) && event.respond_to?(:end_date)
-        #si on choisit la semaine
+        #if choose the week
         if display == :week
-          # week
-          #cell_begin = Time.utc(current_date.year, current_date.month, current_date.day, current_date.hour).to_i
+          #affect the current date in cell begin
           cell_begin = current_date.to_i
+          #add an hour
           cell_end = cell_begin + 3600
         else
           # month
-          #timestamp du jour 'one_day' à 00h00
-          cell_begin = current_date.to_i # de minuit
-          #a minuit (jour d'apres)
+          #timestamp of 'one_day' à 00h00
+          cell_begin = current_date.to_i 
+          #calculate day after
           cell_end = cell_begin + 3600 * 24   
         end
 
+        #if event begin before begin interval
   	    if event.begin_date.to_i <= cell_begin
-  	      #si l'événement commence avant le debut de l'interval, cas #1 et #3 et #5
+  	      #if event end in interval
   	      if event.end_date.to_i <= cell_end
-  	        #si l'événement se termine dans l'interval, cas #3 et #5
-  	        if event.end_date.to_i > cell_begin
-              #si l'événement se termine après le debut de l'interval, cas #3
+  	        #is event end after begin interval
+  	        if event.end_date.to_i > cell_begin           
   	          ok = true
   	        end
   	      else
-  	        #si l'événement se termine après la fin de l'interval, cas #1
+  	        #if event ending after the ending of interval
   	        ok = true
   	      end
   	    else
-  	      #si l'événement commence apres le debut de l'interval, cas #2 et #4 et #6
+  	      #if the event ending after the beginning of the interval
   	      if event.end_date.to_i <= cell_end
-  	        #si l'événement se termine dans l'interval, cas #2
+  	        #if the event ending in interval
   	        ok = true
   	      else
-  	        #si l'événement se termine après la fin de l'interval, cas #4 et #6
+  	        #if event ending after the ending of interval
   	        if event.begin_date.to_i < cell_end
-  	          #si l'événement commence avant la fin de l'interval, cas #4
   	          ok = true
   	        end
   	      end
   	    end
+  	    #return result
         return ok
       end
     end
 
     def display_event(event)
-	    #concatenation of title and the event
+	    #concatenation title and event
 	    title = link_to "#{event.title}", event
-	    #return title of the event
+	    #return title of the event in a list
 	    event_content = content_tag(:li, title, :class => event.category)
-	    #test if content cell is empty
+	    #return content of each cell
 	    return event_content
-    end
-
-    def display_events(events)
-	    return events_content
     end
 
 
@@ -136,11 +136,12 @@ module Calendrier
       #option display
       display = options[:display] || :month
 
-      #si commence un lundi
+      #if choose to begin by monday
       start_on_monday = options[:start_on_monday]
 
       #first day of month
       first_day_of_month = Time.utc(year, month, 1).wday
+      #time-lag if begin by Monday
       first_day_of_month = shift_week_days(first_day_of_month, 1) if start_on_monday
 
       #numbers days in month
@@ -153,16 +154,17 @@ module Calendrier
       #create table include calendar
       days_arr = []
 
-      # initialise counter of journey
+      #initialise counter of journey
       day_counter = 0
 
-      #affichage de la semaine
+      #instanciate object current
       current = Date.new(year, month, day)
 
       #display days of week
+      #copy in memmory with dup
       days_name = t('date.day_names').dup
 
-      #on teste si c'est un lundi
+      #if it's monday , time-lag
       if start_on_monday
         1.times do
           days_name.push(days_name.shift)
@@ -175,7 +177,7 @@ module Calendrier
       #### COMMUN / fin ####
 
 
-      #si on choisit la semaine
+      #if choose the week
       if display == :week
 
 
@@ -184,45 +186,47 @@ module Calendrier
         ##
         #
 
-
-        #on teste si on choisit la semaine
-        #generate entete
+        #options start week
         if start_on_monday
+          #if choose Monday
           day_shift = LUNDI
         else
+          #if choose Sunday
           day_shift = DIMANCHE
         end
+        #affectation first day of week
         first_day_of_week = get_day(current, day_shift)
 
-        #on affiche l'entete
+        #generate header
         table_head = content_tag(:tr, content_tag('th', 'Horaires') + days_name.enum_for(:each_with_index).collect { |day_name, index| content_tag('th', "#{day_name} #{(first_day_of_week + index).to_s}" ) }.join.html_safe )
 
         #month_content = content_tag(:thead, content_tag(:tr, content_tag('th', 'horaires') + days_name.collect { |h| content_tag('th', h ) }.join.html_safe ))
         # %w(a b c).enum_for(:each_with_index).collect { |o, i| "#{i}: #{o}" }
         #returns: ["0: a", "1: b", "2: c"]
-
+          
+          #initialisation
           suba_content = nil
 
-          #preparation events for each journey
-          #sorted events
+          #preparation sorted events for each journey
           events_sorted = events.sort { |x,y| get_event_stamp(x) <=> get_event_stamp(y) } unless events.nil?
-
-          #de 0 à 24h exclut
+          #de 0 to 24h excludes
           (0...HOURS_IN_DAY).each do |hour_index|
+            #affect each line of table      
             sub_content = content_tag(:tr, nil) do
+              #affect each cell of table
               hour_content = content_tag(:td, hour_index)
-              #on retourne 7 fois le jour
-              DAYS_IN_WEEK.times do |index| # 0 1 2 3 4 5 6
+              #return 7 times the day
+              DAYS_IN_WEEK.times do |index|
+                #initiate variable
                 cell_sub_content = nil
                 events_sorted.each do |event|
-        					#jour courant
+        					#current day
         					this_day = (first_day_of_week + index)
-        					#on place dans une variable
+        					#instanciate
         					time_of_day = Time.new(this_day.year, this_day.month, this_day.day, hour_index)
-
-        					#affichage
+        					#display
         					ok = display_event?(event, time_of_day, display)
-        					#si ok
+        					#if display event
         					if ok
                     event_content = display_event(event)
         					  if cell_sub_content.nil?
@@ -232,56 +236,63 @@ module Calendrier
         					  end
         					end
                 end
-                #création liste
+                #create list
                 cell_content = content_tag(:ul, cell_sub_content) unless cell_sub_content.nil?
-                #on incrémente les jours de la semaine
+                #instanciate
+                time_of_day = Time.new(year, month, day)
+                #if day if empty
+                unless time_of_day.nil?
+                  #capture day and block
+        		  	  bloc = capture(time_of_day, &block) if block_given?
+        		  	  #if cell is not null we addd cell_content 
+        			    cell_content << bloc unless cell_content.nil?  
+        			    #if cell_content is empty we affect bloc       			        			   
+        			    cell_content = bloc if cell_content.nil?         			        			   
+                end
+                #affectation cell_content in table
                 hour_content << content_tag(:td, cell_content)
               end
-              #renvoie
+              #return cell
               hour_content
             end
-
-            #si subcontent est vide on le mets dans suba_content
+            #if subcontent is not null we add dans sub_content
             suba_content << sub_content unless suba_content.nil?
-            #si suba_content est vide on remplace suba_content par sub_content
+            #if suba_content is empty, we affect subacontent
             suba_content = sub_content if suba_content.nil?
-            #on retourne
+            #return
             suba_content
-          end
-          #on affiche le contenu
-          table_content = content_tag(:div, suba_content)
-
+        end
+        #display content
+        table_content = content_tag(:div, suba_content)
+        
         #
         ##
         ###
         #### IF WEEK / fin ####
 
       else
-        #sinon c'est le mois
+        #else it's month
 
         #### IF MONTH / debut ####
         ###
         ##
         #
 
-        #on affiche l'entete
+        #generate header
         table_head = content_tag(:tr, days_name.collect { |h| content_tag('th',h) }.join.html_safe )
-
-        # iteration on each week in month
+        #iteration on each week in month
         weeks_in_month.times do |week_index|
-          # iteration on each journey in week
+          #iteration on each journey in week
           (0...DAYS_IN_WEEK).each do |day_index|
-            #if counter = 0
+            #if beginning of month
             if day_counter == 0
               #test beginning of calendar, which begin with the good day in the week
               if day_index != first_day_of_month
-                #while we haven't the good day of the week
-                #we add x
+                #while we haven't the good day of the week we add x
                 days_arr << 'x'
               else
                 #we add 1 in the table
                 days_arr << 1
-
                 #we increment counter
                 day_counter += 1
               end
@@ -302,7 +313,7 @@ module Calendrier
 
         #preparation events for each journey
         events_sorted = events.sort { |x,y| get_event_stamp(x) <=> get_event_stamp(y) } unless events.nil?
-        #tableau de jours
+        #days table
         events_by_days = []
         #empty table
         events_sorted = [] if events_sorted.nil?
@@ -325,35 +336,38 @@ module Calendrier
             end
           end
         end
-
+        
         #display calendar
-          month_content = nil
-          #generate entete
-          #month_content = content_tag(:thead,  table_head )
-          #while length is positive
-          while days_arr.length > 0
-            #définition
-            week_content =  nil
-            #indentation in slice to 7 (DAYS_IN_WEEK) jours
-            one_week = days_arr.slice!(0, DAYS_IN_WEEK)
-            #we prepare the td in variable
-            one_week.each do |one_day|
-              # content of a cell
-              cell_content = content_tag(:ul, nil) do
-                cell_sub_content = nil
-
-                #test day
-                if one_day.is_a?(Integer) && !events_by_days[one_day].nil?
-                  time_of_day = Time.new(year, month, one_day)
-
-                  # ajout des 'li' uniquement
+        month_content = nil
+        #while length is positive
+        while days_arr.length > 0
+          #initiate
+          week_content =  nil
+          #indentation in slice to 7 (DAYS_IN_WEEK) jours
+          one_week = days_arr.slice!(0, DAYS_IN_WEEK)
+          #preparation td in variable
+          one_week.each do |one_day|
+            #content of a cell
+            cell_sub_content = nil
+            #test if day is an integer
+            if one_day.is_a?(Integer)
+              time_of_day = Time.new(year, month, one_day)
+            end
+            #display list
+            cell_content = content_tag(:ul, nil) do
+              #test day is an integer
+              if one_day.is_a?(Integer) && !events_by_days[one_day].nil?
+                # add 'li' only
+                content_tag(:li, nil) do                 
                   events_by_days[one_day].each do |event|
+                    #test if one_day in integer
                     if one_day.is_a?(Integer)
                       ok = display_event?(event, time_of_day, display)
                     end
-                    #if ok we concat
+                    #if display_event is ok
                     if ok
                     	event_content = display_event(event)
+                      #if is empty
             					if cell_sub_content.nil?
             					 	cell_sub_content = event_content
             					else
@@ -361,43 +375,42 @@ module Calendrier
             					end
                     end
                   end
-                  
-        		  	  toto = capture(time_of_day, &block) if block_given?
-        		  	  
-        			    cell_sub_content << toto unless cell_sub_content.nil?         			        			   
-        			    cell_sub_content = toto if cell_sub_content.nil?         			        			   
-                  
                 end
-
-
-        			  #generate markers
-        			  content_tag(:div, nil) do
-        			    content_tag(:span, one_day) + cell_sub_content
-        			  end
               end
-                                 
-              sub_content = content_tag(:td, cell_content)
-
-               
-              if week_content.nil?
-                week_content = sub_content
-              else
-                week_content << sub_content
-              end
+      			  #return
+      			  cell_sub_content
+      		 	end           
+            #if time_of_day is not null
+            unless time_of_day.nil?
+              #capture time_of_day and block
+    		  	  bloc = capture(time_of_day, &block) if block_given?
+    		  	  #affectation if cell_content is not null
+    			    cell_content << bloc unless cell_content.nil?         			        			   
+    			    cell_content = bloc if cell_content.nil?         			        			   
             end
-            #put all the 'td' in 'tr'
-            sub_content = content_tag(:tr, week_content)
-            if month_content.nil?
-              month_content = sub_content
-            else
-              month_content << sub_content
-            end
-            #on retourne le résultat
-            month_content
+            #affectation content_tag                       
+            sub_content = content_tag(:td, content_tag(:span, one_day) + cell_content)
+          #test if week_content is null
+          if week_content.nil?
+            week_content = sub_content
+          else
+            week_content << sub_content
           end
-          #on affiche le contenu
-          table_content = content_tag(:div, month_content)
-      end
+        end
+          #put all the 'td' in 'tr'
+          sub_content = content_tag(:tr, week_content)
+          #test if month_content empty
+          if month_content.nil?
+            month_content = sub_content
+          else
+            month_content << sub_content
+          end
+          #return content of month
+          month_content
+        end
+        #display content
+        table_content = content_tag(:div, month_content)
+    end
 
         #
         ##
@@ -411,9 +424,9 @@ module Calendrier
 
         #display calendar
         content_tag(:table, nil) do
-          # affichage de l'entete
+          #display header
           month_content = content_tag(:thead, table_head)
-          # affichage du contenu
+          #display content
           month_content << content_tag(:tbody, table_content)
         end
 
@@ -422,9 +435,9 @@ module Calendrier
         ###
         #### DISPLAY / fin ####
 
-    #fin du calendrier
+    #end calendar
     end
-  #fin module
+  #end module
   end
-#fin module
+#end module
 end
