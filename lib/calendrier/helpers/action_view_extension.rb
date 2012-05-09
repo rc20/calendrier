@@ -404,33 +404,33 @@ p duration_in_days
             if one_day.is_a?(Integer)
               time_of_day = Time.new(year, month, one_day)
             end
-
-            #display list
-            cell_content = content_tag(:ul, nil) do
-              #test day is an integer
-              if one_day.is_a?(Integer) && !events_by_date[year][month][one_day].nil?
-                # add 'li' only
-                content_tag(:li, nil) do                
+            
+            if one_day.is_a?(Integer) && !events_by_date[year][month][one_day].nil?
+              unless events_by_date[year][month][one_day].count == 0
+                cell_content = content_tag(:ul, nil) do
+                  #test day is an integer
+                  # add 'li' only
                   events_by_date[year][month][one_day].each do |event|
                     #test if one_day in integer
-                    if one_day.is_a?(Integer)
-                      ok = display_event?(event, time_of_day, display)
-                    end
+                    ok = display_event?(event, time_of_day, display)
+
                     #if display_event is ok
                     if ok
-                    	event_content = display_event(event)
+                      event_content = display_event(event)
                       #if is empty
             					if cell_sub_content.nil?
             					 	cell_sub_content = event_content
             					else
             					  cell_sub_content << event_content
             					end
-                    end
+                    end 
                   end
-                end
-              end
+                  cell_sub_content
+                end # ul
+              end # unless
+                
       			  #return
-      			  cell_sub_content
+      			  cell_sub_content   		  
       		 	end
       		 	           
             #if time_of_day is not null
@@ -478,7 +478,12 @@ p duration_in_days
 
       content_tag(:div, nil, :class => 'calendar') do
         #display calendar
-        titre = "#{year} / #{month}"
+        
+        #test du mois courant
+        month_two_digit = (month <= 9 ? "#{0}#{month}" : month.to_s)
+
+        titre = "#{year} / #{month_two_digit}"
+        
         cal = content_tag(:span, titre)
         cal << content_tag(:table, nil) do
           #display header
