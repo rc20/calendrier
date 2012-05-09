@@ -47,6 +47,7 @@ module Calendrier
       current - days_shift
     end
 
+
     #display event
     def display_event?(event, current_date, display)
       #condition on display events
@@ -115,6 +116,44 @@ module Calendrier
 	    return event_content
     end
 
+    def display_events(events, current_time)
+      #display list
+      cell_content = content_tag(:ul, nil) do
+        #test day is an integer
+        # add 'li' only
+        content_tag(:li, nil) do                
+          events_by_days[one_day].each do |event|
+            #test if one_day in integer
+            if one_day.is_a?(Integer)
+              ok = display_event?(event, time_of_day, display)
+            end
+            #if display_event is ok
+            if ok
+            	event_content = display_event(event)
+              #if is empty
+    					if cell_sub_content.nil?
+    					 	cell_sub_content = event_content
+    					else
+    					    cell_sub_content << event_content
+    					end
+            end
+          end
+        end
+			  #return
+			  cell_sub_content
+		 	end           
+      #if time_of_day is not null
+      unless time_of_day.nil?
+        #capture time_of_day and block
+	  	  bloc = capture(time_of_day, &block) if block_given?
+	  	  #affectation if cell_content is not null
+		    cell_content << bloc unless cell_content.nil?         			        			   
+		    cell_content = bloc if cell_content.nil?         			        			   
+      end
+    
+	    return events_content
+    end
+
 
     #display calendar
     def calendrier(events = nil, options = {}, &block)
@@ -171,6 +210,41 @@ module Calendrier
         end
       end
 
+      # sort events by date
+      events_sorted = events.sort { |x,y| get_event_stamp(x) <=> get_event_stamp(y) } unless events.nil?
+      # initialisation du tableau de dates triees
+      events_by_date = []
+      events_sorted.each do |event|
+        # get date from event (begin, end)
+        begin_time = Time.at(get_event_stamp(event))         
+        end_time = Time.at(get_event_stamp(event, :end_date => true))
+        
+        # verification de l'existance du tableau pour les dates de l'evenement
+        # verification des jours
+        
+        begin_date = Date.new(begin_time.year, begin_time.month, begin_time.day)
+        end_date = Date.new(end_time.year, end_time.month, end_time.day)
+        
+        # calcul de la durée en jours
+        duration_in_days = (end_date - begin_date).to_i
+
+        
+        duration_in_days.times do |index|
+          current_date = begin_date + index
+
+          if current_date.year == year && current_date.month == month
+            # préparation du tableau si la date est dans la fenetre affichee
+            events_by_date[current_date.year] = [] if events_by_date[current_date.year].nil?  
+            events_by_date[current_date.year][current_date.month] = [] if events_by_date[current_date.year][current_date.month].nil?  
+            events_by_date[current_date.year][current_date.month][current_date.day] = [] if events_by_date[current_date.year][current_date.month][current_date.day].nil? 
+            #on remplit le tableau
+            events_by_date[current_date.year][current_date.month][current_date.day] << event
+          end
+        end
+      end
+
+
+
       #
       ##
       ###
@@ -204,22 +278,26 @@ module Calendrier
         # %w(a b c).enum_for(:each_with_index).collect { |o, i| "#{i}: #{o}" }
         #returns: ["0: a", "1: b", "2: c"]
           
-          #initialisation
-          suba_content = nil
+        # initialisation
+        suba_content = nil
 
-          #preparation sorted events for each journey
-          events_sorted = events.sort { |x,y| get_event_stamp(x) <=> get_event_stamp(y) } unless events.nil?
+
+      
+                    
+
           #de 0 to 24h excludes
-          (0...HOURS_IN_DAY).each do |hour_index|
+          (0...HOURS_IN_DAY).each do |hour_index|   # 23 x
             #affect each line of table      
             sub_content = content_tag(:tr, nil) do
               #affect each cell of table
               hour_content = content_tag(:td, hour_index)
               #return 7 times the day
-              DAYS_IN_WEEK.times do |index|
+              DAYS_IN_WEEK.times do |index|   # 7 x
+
                 #initiate variable
                 cell_sub_content = nil
-                events_sorted.each do |event|
+                events_sorted.each do |event|      # events (2) x          
+
         					#current day
         					this_day = (first_day_of_week + index)
         					#instanciate
@@ -249,6 +327,7 @@ module Calendrier
         			    #if cell_content is empty we affect bloc       			        			   
         			    cell_content = bloc if cell_content.nil?         			        			   
                 end
+                
                 #affectation cell_content in table
                 hour_content << content_tag(:td, cell_content)
               end
@@ -311,7 +390,7 @@ module Calendrier
           end
         end
 
-        #preparation events for each journey
+        #preparation events for each day
         events_sorted = events.sort { |x,y| get_event_stamp(x) <=> get_event_stamp(y) } unless events.nil?
         #days table
         events_by_days = []
@@ -353,12 +432,16 @@ module Calendrier
             if one_day.is_a?(Integer)
               time_of_day = Time.new(year, month, one_day)
             end
+
+
+
+
             #display list
             cell_content = content_tag(:ul, nil) do
               #test day is an integer
               if one_day.is_a?(Integer) && !events_by_days[one_day].nil?
                 # add 'li' only
-                content_tag(:li, nil) do                 
+                content_tag(:li, nil) do                
                   events_by_days[one_day].each do |event|
                     #test if one_day in integer
                     if one_day.is_a?(Integer)
@@ -371,7 +454,7 @@ module Calendrier
             					if cell_sub_content.nil?
             					 	cell_sub_content = event_content
             					else
-            					    cell_sub_content << event_content
+            					  cell_sub_content << event_content
             					end
                     end
                   end
@@ -388,6 +471,12 @@ module Calendrier
     			    cell_content << bloc unless cell_content.nil?         			        			   
     			    cell_content = bloc if cell_content.nil?         			        			   
             end
+
+
+
+
+
+
             #affectation content_tag                       
             sub_content = content_tag(:td, content_tag(:span, one_day) + cell_content)
           #test if week_content is null
