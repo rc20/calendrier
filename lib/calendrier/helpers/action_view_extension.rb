@@ -153,7 +153,8 @@ module Calendrier
     
 	    return events_content
     end
-
+    
+    
 
     #display calendar
     def calendrier(events = nil, options = {}, &block)
@@ -296,10 +297,15 @@ module Calendrier
     					this_day = (first_day_of_week + index)
     					#instanciate
     					time_of_day = Time.new(this_day.year, this_day.month, this_day.day, hour_index)
-
-              unless events_by_date[this_day.year][this_day.month][this_day.day].nil?
+              
+              #on test si présence d'événements ou non
+              begin 
+                events_by_date[this_day.year][this_day.month][this_day.day].count > 0
+              #on attrape l'erreur
+              rescue NoMethodError
+              #on affiche les événements
+              else 
                 events_by_date[this_day.year][this_day.month][this_day.day].each do |event|      # events (2) x          
-
         					#display
         					ok = display_event?(event, time_of_day, display)
         					#if display event
@@ -313,6 +319,7 @@ module Calendrier
         					end
                 end
               end
+              
               #create list
               cell_content = content_tag(:ul, cell_sub_content) unless cell_sub_content.nil?
               #instanciate
@@ -404,15 +411,21 @@ module Calendrier
               time_of_day = Time.new(year, month, one_day)
             end
             
-            if one_day.is_a?(Integer) && !events_by_date[year][month][one_day].nil?
-              unless events_by_date[year][month][one_day].count == 0
+            if one_day.is_a?(Integer)
+              #test si presénce d'événements ou non
+              begin
+                events_by_date[year][month][one_day].nil? &&  events_by_date[year][month][one_day].count > 0
+              #on attrape la méthode erreur
+              rescue NoMethodError 
+              #on affiche les événements
+              else                    
                 cell_content = content_tag(:ul, nil) do
                   #test day is an integer
                   # add 'li' only
                   events_by_date[year][month][one_day].each do |event|
                     #test if one_day in integer
                     ok = display_event?(event, time_of_day, display)
-
+  
                     #if display_event is ok
                     if ok
                       event_content = display_event(event)
@@ -426,10 +439,9 @@ module Calendrier
                   end
                   cell_sub_content
                 end # ul
-              end # unless
-                
       			  #return
-      			  cell_sub_content   		  
+      			  cell_sub_content
+        		  end  		  
       		 	end
       		 	           
             #if time_of_day is not null
