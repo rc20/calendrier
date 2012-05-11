@@ -227,7 +227,6 @@ module Calendrier
         
         # calcul de la durée en jours
         duration_in_days = (end_date - begin_date).to_i + 1 # il y a au moins 1 journee concernee
-p duration_in_days
         
         duration_in_days.times do |index|
           current_date = begin_date + index
@@ -396,7 +395,7 @@ p duration_in_days
           week_content =  nil
           #indentation in slice to 7 (DAYS_IN_WEEK) jours
           one_week = days_arr.slice!(0, DAYS_IN_WEEK)
-          #preparation td in variable
+          #preparation td in variable 
           one_week.each do |one_day|
             #content of a cell
             cell_sub_content = nil
@@ -481,9 +480,9 @@ p duration_in_days
         
         #test du mois courant
         month_two_digit = (month <= 9 ? "#{0}#{month}" : month.to_s)
-
+        #entete de chaque tableau
         titre = "#{year} / #{month_two_digit}"
-        
+        #affectation de la balise span
         cal = content_tag(:span, titre)
         cal << content_tag(:table, nil) do
           #display header
