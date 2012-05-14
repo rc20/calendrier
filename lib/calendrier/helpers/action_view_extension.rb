@@ -383,7 +383,7 @@ module Calendrier
             if one_day.is_a?(Integer)
               #test si presénce d'événements ou non
               begin
-                if events_by_date[year][month][one_day].nil? && events_by_date[year][month][one_day].count > 0
+                events_by_date[year][month][one_day].nil? && events_by_date[year][month][one_day].count > 0
                   cell_content = content_tag(:ul, nil) do
                     #test day is an integer
                     # add 'li' only
@@ -404,7 +404,7 @@ module Calendrier
                     end
                     cell_sub_content
                   end # ul
-                end
+             
               #on attrape la méthode erreur
               rescue NoMethodError 
                 #on affiche les événements
