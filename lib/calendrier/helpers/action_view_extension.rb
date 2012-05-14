@@ -116,42 +116,11 @@ module Calendrier
 	    return event_content
     end
 
+    def sort_events(events)
+      #return events_by_date
+    end
+
     def display_events(events, current_time)
-      #display list
-      cell_content = content_tag(:ul, nil) do
-        #test day is an integer
-        # add 'li' only
-        content_tag(:li, nil) do                
-          events_by_days[one_day].each do |event|
-            #test if one_day in integer
-            if one_day.is_a?(Integer)
-              ok = display_event?(event, time_of_day, display)
-            end
-            #if display_event is ok
-            if ok
-            	event_content = display_event(event)
-              #if is empty
-    					if cell_sub_content.nil?
-    					 	cell_sub_content = event_content
-    					else
-    					    cell_sub_content << event_content
-    					end
-            end
-          end
-        end
-			  #return
-			  cell_sub_content
-		 	end           
-      #if time_of_day is not null
-      unless time_of_day.nil?
-        #capture time_of_day and block
-	  	  bloc = capture(time_of_day, &block) if block_given?
-	  	  #affectation if cell_content is not null
-		    cell_content << bloc unless cell_content.nil?         			        			   
-		    cell_content = bloc if cell_content.nil?         			        			   
-      end
-    
-	    return events_content
     end
     
     
@@ -300,26 +269,26 @@ module Calendrier
               
               #on test si présence d'événements ou non
               begin 
-                events_by_date[this_day.year][this_day.month][this_day.day].count > 0
-              #on attrape l'erreur
-              rescue NoMethodError
-              #on affiche les événements
-              else 
-                events_by_date[this_day.year][this_day.month][this_day.day].each do |event|      # events (2) x          
-        					#display
-        					ok = display_event?(event, time_of_day, display)
-        					#if display event
-        					if ok
-                    event_content = display_event(event)
-        					  if cell_sub_content.nil?
-        					    cell_sub_content = event_content
-        					  else
-        					    cell_sub_content << event_content
-        					  end
+                if events_by_date[this_day.year][this_day.month][this_day.day].count > 0
+                  events_by_date[this_day.year][this_day.month][this_day.day].each do |event|               
+          					#display
+          					ok = display_event?(event, time_of_day, display)
+          					#if display event
+          					if ok
+                      event_content = display_event(event)
+          					  if cell_sub_content.nil?
+          					    cell_sub_content = event_content
+          					  else
+          					    cell_sub_content << event_content
+          					  end
+          					end
         					end
                 end
+              #on attrape l'erreur
+              rescue NoMethodError
+              #on affiche les événements           
               end
-              
+
               #create list
               cell_content = content_tag(:ul, cell_sub_content) unless cell_sub_content.nil?
               #instanciate
@@ -414,34 +383,33 @@ module Calendrier
             if one_day.is_a?(Integer)
               #test si presénce d'événements ou non
               begin
-                events_by_date[year][month][one_day].nil? &&  events_by_date[year][month][one_day].count > 0
+                if events_by_date[year][month][one_day].nil? && events_by_date[year][month][one_day].count > 0
+                  cell_content = content_tag(:ul, nil) do
+                    #test day is an integer
+                    # add 'li' only
+                    events_by_date[year][month][one_day].each do |event|
+                      #test if one_day in integer
+                      ok = display_event?(event, time_of_day, display)
+    
+                      #if display_event is ok
+                      if ok
+                        event_content = display_event(event)
+                        #if is empty
+              					if cell_sub_content.nil?
+              					 	cell_sub_content = event_content
+              					else
+              					  cell_sub_content << event_content
+              					end
+                      end 
+                    end
+                    cell_sub_content
+                  end # ul
+                end
               #on attrape la méthode erreur
               rescue NoMethodError 
-              #on affiche les événements
-              else                    
-                cell_content = content_tag(:ul, nil) do
-                  #test day is an integer
-                  # add 'li' only
-                  events_by_date[year][month][one_day].each do |event|
-                    #test if one_day in integer
-                    ok = display_event?(event, time_of_day, display)
-  
-                    #if display_event is ok
-                    if ok
-                      event_content = display_event(event)
-                      #if is empty
-            					if cell_sub_content.nil?
-            					 	cell_sub_content = event_content
-            					else
-            					  cell_sub_content << event_content
-            					end
-                    end 
-                  end
-                  cell_sub_content
-                end # ul
-      			  #return
-      			  cell_sub_content
+                #on affiche les événements
         		  end  		  
+      			  cell_sub_content
       		 	end
       		 	           
             #if time_of_day is not null
