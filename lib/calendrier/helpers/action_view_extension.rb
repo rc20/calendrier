@@ -9,26 +9,6 @@ module Calendrier
     DIMANCHE = 0
     LUNDI = 1
 
-    #return the beginning of event in timestamp
-    def get_event_stamp(event, options = {})
-      #tests events
-      if event.respond_to?(:year) && event.respond_to?(:month) && event.respond_to?(:day)
-        #affect the timestamp
-        ret = Time.utc(event[:year], event[:month], event[:day]).to_i
-      #otherwise event include date of beginning and date of end
-      elsif event.respond_to?(:begin_date) && event.respond_to?(:end_date)
-        #if end_date
-        if options[:end_date]
-          #affect end_date
-          ret = event[:end_date]
-        else
-          #affect begin_date
-          ret = event[:begin_date]
-        end
-      end
-      #return result
-      return ret
-    end
 
     #time-lag of days
     def shift_week_days(wday, index)
@@ -48,61 +28,6 @@ module Calendrier
     end
 
 
-    #display event
-    def display_event?(event, display_time, display)
-      #condition on display events
-      if event.respond_to?(:year) && event.respond_to?(:month) && event.respond_to?(:day)
-        #if choose the week or month, we compare year, month and day
-        if display == :week || display == :month
-          ok = true if event.year == display_time.year && event.month == display_time.month && event.day == display_time.day
-        end
-      end
-
-      #if event has an determine duree
-      if event.respond_to?(:begin_date) && event.respond_to?(:end_date)
-        #if choose the week
-        if display == :week
-          #current date in cell begin
-          cell_begin = display_time.to_i
-          #add an hour
-          cell_end = cell_begin + 3600
-        #if choose month
-        else
-          #timestamp of 'one_day' à 00h00
-          cell_begin = display_time.to_i 
-          #calculate day after
-          cell_end = cell_begin + 3600 * 24   
-        end
-
-        #if event begin before begin interval
-  	    if event.begin_date.to_i <= cell_begin
-  	      #if event end in interval
-  	      if event.end_date.to_i <= cell_end
-  	        #is event end after begin interval
-  	        if event.end_date.to_i > cell_begin           
-  	          ok = true
-  	        end
-  	      else
-  	        #if event ending after the ending of interval
-  	        ok = true
-  	      end
-  	    else
-  	      #if the event ending after the beginning of the interval
-  	      if event.end_date.to_i <= cell_end
-  	        #if the event ending in interval
-  	        ok = true
-  	      else
-  	        #if event ending after the ending of interval
-  	        if event.begin_date.to_i < cell_end
-  	          ok = true
-  	        end
-  	      end
-  	    end
-  	    #result
-        return ok
-      end
-    end
-
     def display_event(event)
 	    #concatenation title and event
 	    title = link_to "#{event.title}", event
@@ -112,41 +37,6 @@ module Calendrier
 	    return event_content
     end
 
-    #sort events
-    def sort_events(events, display_time)
-      #sort events by date
-      events_sorted = events.sort { |x,y| get_event_stamp(x) <=> get_event_stamp(y) } unless events.nil?
-      # sort table date
-      events_by_date = []
-      events_sorted.each do |event|
-        # get date from event (begin, end)
-        begin_time = Time.at(get_event_stamp(event))         
-        end_time = Time.at(get_event_stamp(event, :end_date => true))
-             
-        begin_date = Date.new(begin_time.year, begin_time.month, begin_time.day)
-        end_date = Date.new(end_time.year, end_time.month, end_time.day)
-        
-        #calulate duration in days
-        #at least one day
-        duration_in_days = (end_date - begin_date).to_i + 1 
-        
-        duration_in_days.times do |index|
-          # !!! ADDITION A UNE DATE --> +n jours
-          current_date = begin_date + index
-
-          if current_date.year == display_time.year && current_date.month == display_time.month
-            #preparation table if date is in window
-            events_by_date[current_date.year] = [] if events_by_date[current_date.year].nil?  
-            events_by_date[current_date.year][current_date.month] = [] if events_by_date[current_date.year][current_date.month].nil?  
-            events_by_date[current_date.year][current_date.month][current_date.day] = [] if events_by_date[current_date.year][current_date.month][current_date.day].nil? 
-            #construction table
-            events_by_date[current_date.year][current_date.month][current_date.day] << event
-          end
-        end
-      end
-      #result table
-      return events_by_date
-    end
     
     #display events
     def display_events(events, display_time, display)
@@ -185,7 +75,7 @@ module Calendrier
     end
     
     #display calendar
-    def calendrier(events = nil, options = {}, &block)
+    def calendrier(options = {}, &block)
 
       #### COMMUN / debut ####
       ###
@@ -239,9 +129,6 @@ module Calendrier
         end
       end
 
-      #sort events
-      events_by_date = sort_events(events, current)
-
       #
       ##
       ###
@@ -293,7 +180,8 @@ module Calendrier
     					#hours calendar
     					time_of_day = Time.utc(this_day.year, this_day.month, this_day.day, hour_index)
               #display events
-              cell_content = display_events(events, time_of_day, display)                               
+              cell_content = nil
+              #cell_content = display_events(events, time_of_day, display)                               
               #if time_of_day is not null
               unless time_of_day.nil?
                 #capture time_of_day and block
@@ -373,11 +261,11 @@ module Calendrier
           #preparation td in variable 
           one_week.each do |one_day|
             #test if day is an integer
+            cell_content = nil
             if one_day.is_a?(Integer)
               time_of_day = Time.new(year, month, one_day)
-              cell_content = display_events(events, time_of_day, display) 
+              #cell_content = display_events(events, time_of_day, display) 
             end
-
             #if time_of_day is not null
             unless time_of_day.nil?
               #capture time_of_day and block
