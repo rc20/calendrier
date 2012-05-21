@@ -30,7 +30,7 @@ module Calendrier
       return ret
     end
 
-    #decalage of days
+    #time-lag of days
     def shift_week_days(wday, index)
       wday -= index
       #add + 7 time-lag
@@ -52,26 +52,22 @@ module Calendrier
     def display_event?(event, display_time, display)
       #condition on display events
       if event.respond_to?(:year) && event.respond_to?(:month) && event.respond_to?(:day)
-        #if choose the week, we compare year, month and day
-        if display == :week
-          ok = true if event.year == display_time.year && event.month == display_time.month && event.day == display_time.day
-        else
-          #else if month
+        #if choose the week or month, we compare year, month and day
+        if display == :week || display == :month
           ok = true if event.year == display_time.year && event.month == display_time.month && event.day == display_time.day
         end
       end
 
-      #test date begin and end date
-      #test if event has an determine duree
+      #if event has an determine duree
       if event.respond_to?(:begin_date) && event.respond_to?(:end_date)
         #if choose the week
         if display == :week
-          #affect the current date in cell begin
+          #current date in cell begin
           cell_begin = display_time.to_i
           #add an hour
           cell_end = cell_begin + 3600
+        #if choose month
         else
-          # month
           #timestamp of 'one_day' à 00h00
           cell_begin = display_time.to_i 
           #calculate day after
@@ -102,7 +98,7 @@ module Calendrier
   	        end
   	      end
   	    end
-  	    #return result
+  	    #result
         return ok
       end
     end
@@ -116,11 +112,11 @@ module Calendrier
 	    return event_content
     end
 
-    #méthode de tri des événements
+    #sort events
     def sort_events(events, display_time)
       #sort events by date
       events_sorted = events.sort { |x,y| get_event_stamp(x) <=> get_event_stamp(y) } unless events.nil?
-      # initialisation du tableau de dates triees
+      # sort table date
       events_by_date = []
       events_sorted.each do |event|
         # get date from event (begin, end)
@@ -133,8 +129,9 @@ module Calendrier
         begin_date = Date.new(begin_time.year, begin_time.month, begin_time.day)
         end_date = Date.new(end_time.year, end_time.month, end_time.day)
         
-        # calcul de la durée en jours
-        duration_in_days = (end_date - begin_date).to_i + 1 # il y a au moins 1 journee concernee
+        #calulate duration in days
+        #at leaat one day
+        duration_in_days = (end_date - begin_date).to_i + 1 
         
         duration_in_days.times do |index|
           # !!! ADDITION A UNE DATE --> +n jours
@@ -150,25 +147,22 @@ module Calendrier
           end
         end
       end
-      #on retourne le tableau  
+      #result
       return events_by_date
     end
     
-    #méthode d'affichage des événements
+    #display events
     def display_events(events, display_time, display)
-puts "display events"
-puts display_time
       current_date = Date.new(display_time.year, display_time.month, display_time.day)
      
-      #appel de la méthode de tri des événements
+      #sort events
       events_by_date = sort_events(events, current_date)
       
-      #initilisation de la variable cell_content
+      #initialisation variable cell_content and cell_sub_content
       cell_content = nil
-      #initialisaation de la variable cell_sub_content
       cell_sub_content = nil
    
-      #on test si présence d'événements ou non
+      #test whether or not the presence of events
       if events_by_date[display_time.year] && events_by_date[display_time.year][display_time.month] && events_by_date[display_time.year][display_time.month][display_time.day]
         events_by_date[display_time.year][display_time.month][display_time.day].each do |event|               
 					#display
@@ -185,15 +179,14 @@ puts display_time
 				end
       end
  
-      #create list
+      #create content cell
       cell_content = content_tag(:ul, cell_sub_content) unless cell_sub_content.nil?
       
-      #on retourne le résultat
+      #result
       return cell_content
       
     end
     
-
     #display calendar
     def calendrier(events = nil, options = {}, &block)
 
@@ -214,12 +207,12 @@ puts display_time
       #option display
       display = options[:display] || :month
 
-      #if choose to begin by monday
+      #choose to begin by monday
       start_on_monday = options[:start_on_monday]
 
       #first day of month
       first_day_of_month = Time.utc(year, month, 1).wday
-      #time-lag if begin by Monday
+      #taking into account the lag
       first_day_of_month = shift_week_days(first_day_of_month, 1) if start_on_monday
 
       #numbers days in month
@@ -235,21 +228,21 @@ puts display_time
       #initialise counter of journey
       day_counter = 0
 
-      #instanciate object current
+      #object date
       current = Date.new(year, month, day)
 
       #display days of week
       #copy in memmory with dup
       days_name = t('date.day_names').dup
 
-      #if it's monday , time-lag
+      #if it's monday, time-lag
       if start_on_monday
         1.times do
           days_name.push(days_name.shift)
         end
       end
 
-      #appel méthode sort events
+      #sort events
       events_by_date = sort_events(events, current)
 
       #
@@ -269,13 +262,14 @@ puts display_time
 
         #options start week
         if start_on_monday
-          #if choose Monday
+          #choose Monday
           day_shift = LUNDI
         else
-          #if choose Sunday
+          #choose Sunday
           day_shift = DIMANCHE
         end
-        #affectation first day of week
+        
+        #first day of week wih time-lag
         first_day_of_week = get_day(current, day_shift)
 
         #generate header
@@ -285,26 +279,24 @@ puts display_time
         # %w(a b c).enum_for(:each_with_index).collect { |o, i| "#{i}: #{o}" }
         #returns: ["0: a", "1: b", "2: c"]
           
-        # initialisation
+        #initialisation
         table_content = nil
 
         #de 0 to 24h excludes
-        (0...HOURS_IN_DAY).each do |hour_index|   # 23 x
-          #affect each line of table      
+        (0...HOURS_IN_DAY).each do |hour_index|
+          #each line of table      
           sub_content = content_tag(:tr, nil) do
             #affect each cell of table
             hour_content = content_tag(:td, hour_index)
             #return 7 times the day
-            DAYS_IN_WEEK.times do |index|   # 7 x
-
+            DAYS_IN_WEEK.times do |index|  
+            
     					#current day
     					this_day = (first_day_of_week + index)
-    					#instanciate
-    					time_of_day = Time.new(this_day.year, this_day.month, this_day.day, hour_index)
-
+    					#hours calendar
+    					time_of_day = Time.utc(this_day.year, this_day.month, this_day.day, hour_index)
               #appelle de la méthode
-              cell_content = display_events(events, time_of_day, display)
-                                    
+              cell_content = display_events(events, time_of_day, display)                               
               #if time_of_day is not null
               unless time_of_day.nil?
                 #capture time_of_day and block
@@ -313,18 +305,17 @@ puts display_time
           	    cell_content << bloc unless cell_content.nil?         			        			   
           	    cell_content = bloc if cell_content.nil?         			        			   
               end
-
               #affectation cell_content in table
               hour_content << content_tag(:td, cell_content)
             end
-            #return cell
+            #result
             hour_content
           end
-          #if subcontent is not null we add dans sub_content
+          #subcontent is not null we add dans sub_content
           table_content << sub_content unless table_content.nil?
-          #if suba_content is empty, we affect subacontent
+          #suba_content is empty, we affect subacontent
           table_content = sub_content if table_content.nil?
-          #return
+          #result
           table_content
         end
         
@@ -347,7 +338,7 @@ puts display_time
         weeks_in_month.times do |week_index|
           #iteration on each journey in week
           (0...DAYS_IN_WEEK).each do |day_index|
-            #if beginning of month
+            #beginning of month
             if day_counter == 0
               #test beginning of calendar, which begin with the good day in the week
               if day_index != first_day_of_month
@@ -389,8 +380,7 @@ puts display_time
               time_of_day = Time.new(year, month, one_day)
               cell_content = display_events(events, time_of_day, display) 
             end
-            
-            
+
             #if time_of_day is not null
             unless time_of_day.nil?
               #capture time_of_day and block
@@ -399,12 +389,11 @@ puts display_time
         	    cell_content << bloc unless cell_content.nil?         			        			   
         	    cell_content = bloc if cell_content.nil?         			        			   
             end
-		 	           
-           
-            #affectation content_tag                       
+		 	                    
+            #affect content                      
             sub_content = content_tag(:td, content_tag(:span, one_day) + cell_content)
 
-            #test if week_content is null
+            #test week_content
             if week_content.nil?
               week_content = sub_content
             else
@@ -434,13 +423,11 @@ puts display_time
       ###
       ##
       #
-
-      content_tag(:div, nil, :class => 'calendar') do
-        #display calendar
-        
-        #test du mois courant
+          
+      content_tag(:div, nil, :class => 'calendar') do  
+        #test if add a 0 or not by month
         month_two_digit = (month <= 9 ? "#{0}#{month}" : month.to_s)
-        #entete de chaque tableau
+        #head each table
         titre = "#{year} / #{month_two_digit}"
         #affectation de la balise span
         cal = content_tag(:span, titre)
@@ -456,6 +443,7 @@ puts display_time
       ##
       ###
       #### DISPLAY / fin ####
+      
 
     #end calendar
     end
