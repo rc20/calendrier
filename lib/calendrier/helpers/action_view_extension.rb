@@ -122,15 +122,12 @@ module Calendrier
         # get date from event (begin, end)
         begin_time = Time.at(get_event_stamp(event))         
         end_time = Time.at(get_event_stamp(event, :end_date => true))
-        
-        # verification de l'existance du tableau pour les dates de l'evenement
-        # verification des jours
-        
+             
         begin_date = Date.new(begin_time.year, begin_time.month, begin_time.day)
         end_date = Date.new(end_time.year, end_time.month, end_time.day)
         
         #calulate duration in days
-        #at leaat one day
+        #at least one day
         duration_in_days = (end_date - begin_date).to_i + 1 
         
         duration_in_days.times do |index|
@@ -138,16 +135,16 @@ module Calendrier
           current_date = begin_date + index
 
           if current_date.year == display_time.year && current_date.month == display_time.month
-            # préparation du tableau si la date est dans la fenetre affichee
+            #preparation table if date is in window
             events_by_date[current_date.year] = [] if events_by_date[current_date.year].nil?  
             events_by_date[current_date.year][current_date.month] = [] if events_by_date[current_date.year][current_date.month].nil?  
             events_by_date[current_date.year][current_date.month][current_date.day] = [] if events_by_date[current_date.year][current_date.month][current_date.day].nil? 
-            #on remplit le tableau
+            #construction table
             events_by_date[current_date.year][current_date.month][current_date.day] << event
           end
         end
       end
-      #result
+      #result table
       return events_by_date
     end
     
@@ -288,14 +285,14 @@ module Calendrier
           sub_content = content_tag(:tr, nil) do
             #affect each cell of table
             hour_content = content_tag(:td, hour_index)
-            #return 7 times the day
+            #return days of week
             DAYS_IN_WEEK.times do |index|  
             
     					#current day
     					this_day = (first_day_of_week + index)
     					#hours calendar
     					time_of_day = Time.utc(this_day.year, this_day.month, this_day.day, hour_index)
-              #appelle de la méthode
+              #display events
               cell_content = display_events(events, time_of_day, display)                               
               #if time_of_day is not null
               unless time_of_day.nil?
@@ -429,7 +426,7 @@ module Calendrier
         month_two_digit = (month <= 9 ? "#{0}#{month}" : month.to_s)
         #head each table
         titre = "#{year} / #{month_two_digit}"
-        #affectation de la balise span
+        #affectation balise span in each cell
         cal = content_tag(:span, titre)
         cal << content_tag(:table, nil) do
           #display header
