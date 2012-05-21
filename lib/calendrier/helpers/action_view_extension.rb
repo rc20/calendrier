@@ -49,15 +49,15 @@ module Calendrier
 
 
     #display event
-    def display_event?(event, current_date, display)
+    def display_event?(event, display_time, display)
       #condition on display events
       if event.respond_to?(:year) && event.respond_to?(:month) && event.respond_to?(:day)
         #if choose the week, we compare year, month and day
         if display == :week
-          ok = true if event.year == current_date.year && event.month == current_date.month && event.day == current_date.day
+          ok = true if event.year == display_time.year && event.month == display_time.month && event.day == display_time.day
         else
           #else if month
-          ok = true if event.year == current_date.year && event.month == current_date.month && event.day == current_date.day
+          ok = true if event.year == display_time.year && event.month == display_time.month && event.day == display_time.day
         end
       end
 
@@ -67,13 +67,13 @@ module Calendrier
         #if choose the week
         if display == :week
           #affect the current date in cell begin
-          cell_begin = current_date.to_i
+          cell_begin = display_time.to_i
           #add an hour
           cell_end = cell_begin + 3600
         else
           # month
           #timestamp of 'one_day' à 00h00
-          cell_begin = current_date.to_i 
+          cell_begin = display_time.to_i 
           #calculate day after
           cell_end = cell_begin + 3600 * 24   
         end
@@ -116,13 +116,82 @@ module Calendrier
 	    return event_content
     end
 
-    def sort_events(events)
-      #return events_by_date
-    end
+    #méthode de tri des événements
+    def sort_events(events, display_time)
+      #sort events by date
+      events_sorted = events.sort { |x,y| get_event_stamp(x) <=> get_event_stamp(y) } unless events.nil?
+      # initialisation du tableau de dates triees
+      events_by_date = []
+      events_sorted.each do |event|
+        # get date from event (begin, end)
+        begin_time = Time.at(get_event_stamp(event))         
+        end_time = Time.at(get_event_stamp(event, :end_date => true))
+        
+        # verification de l'existance du tableau pour les dates de l'evenement
+        # verification des jours
+        
+        begin_date = Date.new(begin_time.year, begin_time.month, begin_time.day)
+        end_date = Date.new(end_time.year, end_time.month, end_time.day)
+        
+        # calcul de la durée en jours
+        duration_in_days = (end_date - begin_date).to_i + 1 # il y a au moins 1 journee concernee
+        
+        duration_in_days.times do |index|
+          # !!! ADDITION A UNE DATE --> +n jours
+          current_date = begin_date + index
 
-    def display_events(events, current_time)
+          if current_date.year == display_time.year && current_date.month == display_time.month
+            # préparation du tableau si la date est dans la fenetre affichee
+            events_by_date[current_date.year] = [] if events_by_date[current_date.year].nil?  
+            events_by_date[current_date.year][current_date.month] = [] if events_by_date[current_date.year][current_date.month].nil?  
+            events_by_date[current_date.year][current_date.month][current_date.day] = [] if events_by_date[current_date.year][current_date.month][current_date.day].nil? 
+            #on remplit le tableau
+            events_by_date[current_date.year][current_date.month][current_date.day] << event
+          end
+        end
+      end
+      #on retourne le tableau  
+      return events_by_date
     end
     
+    #méthode d'affichage des événements
+    def display_events(events, display_time, display)
+puts "display events"
+puts display_time
+      current_date = Date.new(display_time.year, display_time.month, display_time.day)
+     
+      #appel de la méthode de tri des événements
+      events_by_date = sort_events(events, current_date)
+      
+      #initilisation de la variable cell_content
+      cell_content = nil
+      #initialisaation de la variable cell_sub_content
+      cell_sub_content = nil
+   
+      #on test si présence d'événements ou non
+      if events_by_date[display_time.year] && events_by_date[display_time.year][display_time.month] && events_by_date[display_time.year][display_time.month][display_time.day]
+        events_by_date[display_time.year][display_time.month][display_time.day].each do |event|               
+					#display
+					ok = display_event?(event, display_time, display)
+					#if display event
+					if ok
+            event_content = display_event(event)
+					  if cell_sub_content.nil?
+					    cell_sub_content = event_content
+					  else
+					    cell_sub_content << event_content
+					  end
+					end
+				end
+      end
+ 
+      #create list
+      cell_content = content_tag(:ul, cell_sub_content) unless cell_sub_content.nil?
+      
+      #on retourne le résultat
+      return cell_content
+      
+    end
     
 
     #display calendar
@@ -180,39 +249,8 @@ module Calendrier
         end
       end
 
-      # sort events by date
-      events_sorted = events.sort { |x,y| get_event_stamp(x) <=> get_event_stamp(y) } unless events.nil?
-      # initialisation du tableau de dates triees
-      events_by_date = []
-      events_sorted.each do |event|
-        # get date from event (begin, end)
-        begin_time = Time.at(get_event_stamp(event))         
-        end_time = Time.at(get_event_stamp(event, :end_date => true))
-        
-        # verification de l'existance du tableau pour les dates de l'evenement
-        # verification des jours
-        
-        begin_date = Date.new(begin_time.year, begin_time.month, begin_time.day)
-        end_date = Date.new(end_time.year, end_time.month, end_time.day)
-        
-        # calcul de la durée en jours
-        duration_in_days = (end_date - begin_date).to_i + 1 # il y a au moins 1 journee concernee
-        
-        duration_in_days.times do |index|
-          current_date = begin_date + index
-
-          if current_date.year == year && current_date.month == month
-            # préparation du tableau si la date est dans la fenetre affichee
-            events_by_date[current_date.year] = [] if events_by_date[current_date.year].nil?  
-            events_by_date[current_date.year][current_date.month] = [] if events_by_date[current_date.year][current_date.month].nil?  
-            events_by_date[current_date.year][current_date.month][current_date.day] = [] if events_by_date[current_date.year][current_date.month][current_date.day].nil? 
-            #on remplit le tableau
-            events_by_date[current_date.year][current_date.month][current_date.day] << event
-          end
-        end
-      end
-
-
+      #appel méthode sort events
+      events_by_date = sort_events(events, current)
 
       #
       ##
@@ -259,50 +297,23 @@ module Calendrier
             #return 7 times the day
             DAYS_IN_WEEK.times do |index|   # 7 x
 
-              #initiate variable
-              cell_sub_content = nil
-
     					#current day
     					this_day = (first_day_of_week + index)
     					#instanciate
     					time_of_day = Time.new(this_day.year, this_day.month, this_day.day, hour_index)
-              
-              #on test si présence d'événements ou non
-              begin 
-                if events_by_date[this_day.year][this_day.month][this_day.day].count > 0
-                  events_by_date[this_day.year][this_day.month][this_day.day].each do |event|               
-          					#display
-          					ok = display_event?(event, time_of_day, display)
-          					#if display event
-          					if ok
-                      event_content = display_event(event)
-          					  if cell_sub_content.nil?
-          					    cell_sub_content = event_content
-          					  else
-          					    cell_sub_content << event_content
-          					  end
-          					end
-        					end
-                end
-              #on attrape l'erreur
-              rescue NoMethodError
-              #on affiche les événements           
+
+              #appelle de la méthode
+              cell_content = display_events(events, time_of_day, display)
+                                    
+              #if time_of_day is not null
+              unless time_of_day.nil?
+                #capture time_of_day and block
+            	  bloc = capture(time_of_day, &block) if block_given?
+            	  #affectation if cell_content is not null
+          	    cell_content << bloc unless cell_content.nil?         			        			   
+          	    cell_content = bloc if cell_content.nil?         			        			   
               end
 
-              #create list
-              cell_content = content_tag(:ul, cell_sub_content) unless cell_sub_content.nil?
-              #instanciate
-              time_of_day = Time.new(year, month, day)
-              #if day if empty
-              unless time_of_day.nil?
-                #capture day and block
-      		  	  bloc = capture(time_of_day, &block) if block_given?
-      		  	  #if cell is not null we addd cell_content 
-      			    cell_content << bloc unless cell_content.nil?  
-      			    #if cell_content is empty we affect bloc       			        			   
-      			    cell_content = bloc if cell_content.nil?         			        			   
-              end
-              
               #affectation cell_content in table
               hour_content << content_tag(:td, cell_content)
             end
@@ -373,54 +384,23 @@ module Calendrier
           one_week = days_arr.slice!(0, DAYS_IN_WEEK)
           #preparation td in variable 
           one_week.each do |one_day|
-            #content of a cell
-            cell_sub_content = nil
             #test if day is an integer
             if one_day.is_a?(Integer)
               time_of_day = Time.new(year, month, one_day)
+              cell_content = display_events(events, time_of_day, display) 
             end
             
-            if one_day.is_a?(Integer)
-              #test si presénce d'événements ou non
-              begin
-                if events_by_date[year][month][one_day].nil? && events_by_date[year][month][one_day].count > 0
-                  cell_content = content_tag(:ul, nil) do
-                    #test day is an integer
-                    # add 'li' only
-                    events_by_date[year][month][one_day].each do |event|
-                      #test if one_day in integer
-                      ok = display_event?(event, time_of_day, display)
-    
-                      #if display_event is ok
-                      if ok
-                        event_content = display_event(event)
-                        #if is empty
-              					if cell_sub_content.nil?
-              					 	cell_sub_content = event_content
-              					else
-              					  cell_sub_content << event_content
-              					end
-                      end 
-                    end
-                    cell_sub_content
-                  end # ul
-                end
-              #on attrape la méthode erreur
-              rescue NoMethodError 
-                #on affiche les événements
-        		  end  		  
-      			  cell_sub_content
-      		 	end
-      		 	           
+            
             #if time_of_day is not null
             unless time_of_day.nil?
               #capture time_of_day and block
-    		  	  bloc = capture(time_of_day, &block) if block_given?
-    		  	  #affectation if cell_content is not null
-    			    cell_content << bloc unless cell_content.nil?         			        			   
-    			    cell_content = bloc if cell_content.nil?         			        			   
+          	  bloc = capture(time_of_day, &block) if block_given?
+          	  #affectation if cell_content is not null
+        	    cell_content << bloc unless cell_content.nil?         			        			   
+        	    cell_content = bloc if cell_content.nil?         			        			   
             end
-
+		 	           
+           
             #affectation content_tag                       
             sub_content = content_tag(:td, content_tag(:span, one_day) + cell_content)
 
