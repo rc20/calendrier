@@ -39,11 +39,11 @@ module Calendrier
 
     
     #display events
-    def display_events(events, display_time, display)
+    def display_events(events_by_date, display_time, display)
       current_date = Date.new(display_time.year, display_time.month, display_time.day)
      
       #sort events
-      events_by_date = sort_events(events, current_date)
+      #events_by_date = Calendrier::ActionControllerExtension::sort_events(events, current_date)
       
       #initialisation variable cell_content and cell_sub_content
       cell_content = nil
@@ -53,7 +53,8 @@ module Calendrier
       if events_by_date[display_time.year] && events_by_date[display_time.year][display_time.month] && events_by_date[display_time.year][display_time.month][display_time.day]
         events_by_date[display_time.year][display_time.month][display_time.day].each do |event|               
 					#display
-					ok = display_event?(event, display_time, display)
+
+					ok = Events.display_event?(event, display_time, display)
 					#if display event
 					if ok
             event_content = display_event(event)

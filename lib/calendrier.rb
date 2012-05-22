@@ -1,4 +1,5 @@
 require "calendrier/version"
+require "calendrier/events"
 require "calendrier/controllers/action_controller_extension"
 require "calendrier/helpers/action_view_extension"
 
