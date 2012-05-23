@@ -10,6 +10,7 @@ It allows to display events.
     # Display month
         <%= calendrier(:year => 2012, :month => 5, :day => 25, :start_on_monday => true) do |current_time| %>
     # Recover events
+    # events_by_date accessible in controller
         <%= display_events(@events_by_date, current_time, :month) %>
     # Add events
         <%= link_to("Ajouter le #{current_time.day}", new_meeting_path) %>
