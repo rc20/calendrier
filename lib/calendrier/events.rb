@@ -1,10 +1,10 @@
-module Calendrier 
+module Calendrier
   module Events
     #return the beginning of event in timestamp
     def self.get_event_stamp(event, options = {})
-      #tests events
+      #tests for events
       if event.respond_to?(:year) && event.respond_to?(:month) && event.respond_to?(:day)
-        #affect the timestamp
+        #format hour utc
         ret = Time.utc(event[:year], event[:month], event[:day]).to_i
       #otherwise event include date of beginning and date of end
       elsif event.respond_to?(:begin_date) && event.respond_to?(:end_date)
@@ -31,7 +31,7 @@ module Calendrier
         end
       end
 
-      #if event has an determine duree
+      #if event has a determine duree
       if event.respond_to?(:begin_date) && event.respond_to?(:end_date)
         #if choose the week
         if display == :week
@@ -46,7 +46,6 @@ module Calendrier
           #calculate day after
           cell_end = cell_begin + 3600 * 24   
         end
-
         #if event begin before begin interval
   	    if event.begin_date.to_i <= cell_begin
   	      #if event end in interval
@@ -71,10 +70,9 @@ module Calendrier
   	        end
   	      end
   	    end
-  	    #result
-        return ok
-      end
+      end     
+	    #return result
+      return ok
     end
-
   end
 end
