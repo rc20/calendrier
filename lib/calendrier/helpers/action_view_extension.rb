@@ -291,9 +291,9 @@ module Calendrier
       #
       ##
       ###
-      #### IF MONTH / fin ####
+      #### IF MONTH / END ####
 
-      #### DISPLAY / debut ####
+      #### DISPLAY / BEGIN ####
       ###
       ##
       #
@@ -316,7 +316,7 @@ module Calendrier
       #
       ##
       ###
-      #### DISPLAY / fin ####
+      #### DISPLAY / END ####
       
     #end calendar
     end

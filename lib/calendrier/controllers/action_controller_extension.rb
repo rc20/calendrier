@@ -25,7 +25,7 @@ module Calendrier
         duration_in_days = (end_date - begin_date).to_i + 1
         
         duration_in_days.times do |index|
-          # !!! ADDITION A UNE DATE --> +n jours
+          #addition to a date
           current_date = begin_date + index               
             #preparation table if year is in window         
             events_by_date[current_date.year.to_s] = {} if events_by_date[current_date.year.to_s].nil?  
@@ -40,7 +40,7 @@ module Calendrier
             events_by_date[current_date.year.to_s][current_date.month.to_s][current_date.day.to_s] << event
         end
       end
-      #result table
+      #result final table
       return events_by_date
     end
   end
