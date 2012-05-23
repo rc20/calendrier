@@ -8,19 +8,19 @@ It allows to display events.
 ##SYNOPSIS:
 
     # Display month
-    <%= calendrier(:year => 2012, :month => 5, :day => 25, :start_on_monday => true) do |current_time| %>
-    # Recover Events
-    <%= display_events(@events_by_date, current_time, :month) %>
-    <%= link_to("Ajouter le #{current_time.day}", new_meeting_path) %>
-    <% end %>
+        <%= calendrier(:year => 2012, :month => 5, :day => 25, :start_on_monday => true) do |current_time| %>
+    # Recover events
+        <%= display_events(@events_by_date, current_time, :month) %>
+    # Add events
+        <%= link_to("Ajouter le #{current_time.day}", new_meeting_path) %>
 
     # Display week
-    <%= calendrier(:year => 2012, :month => 5, :day => 25, :start_on_monday => true, :display => :week) do |current_time| %>
-    # Recover Events
-    <%= display_events(@events_by_date, current_time, :week) %>
-    <%= link_to("Ajouter le #{current_time.day} à #{current_time.hour}h", new_meeting_path) %>
-    <% end %>
-
+        <%= calendrier(:year => 2012, :month => 5, :day => 25, :start_on_monday => true, :display => :week) do |current_time| %>
+    # Recover events
+        <%= display_events(@events_by_date, current_time, :week) %>
+    # Add events
+        <%= link_to("Ajouter le #{current_time.day} à #{current_time.hour}h", new_meeting_path) %>
+        
 
 Events could be a mix of many different objects, but each of them should `respond_to?` one of the following method sets :
 
