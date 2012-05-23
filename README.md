@@ -7,11 +7,18 @@ It allows to display events.
 
 ##SYNOPSIS:
 
-    # Simple without events
-    <%= calendrier(nil, :year => 2012, :month => 4) %>  
+    # Display month
+    <%= calendrier(:year => 2012, :month => 5, :day => 25, :start_on_monday => true) do |current_time| %>
+    <%= display_events(@events_by_date, current_time, :month) %>
+    <%= link_to("Ajouter le #{current_time.day}", new_meeting_path) %>
+    <% end %>
 
-    # Simple with events
-    <%= calendrier(@events, :year => 2012, :month => 4) %>  
+    # Display week
+    <%= calendrier(:year => 2012, :month => 5, :day => 25, :start_on_monday => true, :display => :week) do |current_time| %>
+    <%= display_events(@events_by_date, current_time, :week) %>
+    <%= link_to("Ajouter le #{current_time.day} à #{current_time.hour}h", new_meeting_path) %>
+    <% end %>
+
 
 Events could be a mix of many different objects, but each of them should `respond_to?` one of the following method sets :
 

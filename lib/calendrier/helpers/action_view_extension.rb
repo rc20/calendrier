@@ -48,20 +48,20 @@ module Calendrier
         
         events_by_date.fetch(display_time.year.to_s).fetch(display_time.month.to_s).fetch(display_time.day.to_s).each do |event|
               
-					#display		 		 
-					ok = Events.display_event?(event, display_time, display)
-					
-					#if display event
-					if ok     
-            event_content = display_event(event)
-					  if cell_sub_content.nil?
-					    cell_sub_content = event_content
-					  else
-					    cell_sub_content << event_content
-					  end
-					end
-				end
+        #display		 		 
+        ok = Events.display_event?(event, display_time, display)
+        
+        #if display event
+        if ok     
+          event_content = display_event(event)
+        if cell_sub_content.nil?
+          cell_sub_content = event_content
+        else
+          cell_sub_content << event_content
+        end
       end
+     end
+    end
  
       #create content cell
       cell_content = content_tag(:ul, cell_sub_content) unless cell_sub_content.nil?
