@@ -9,12 +9,14 @@ It allows to display events.
 
     # Display month
     <%= calendrier(:year => 2012, :month => 5, :day => 25, :start_on_monday => true) do |current_time| %>
+    # Recover Events
     <%= display_events(@events_by_date, current_time, :month) %>
     <%= link_to("Ajouter le #{current_time.day}", new_meeting_path) %>
     <% end %>
 
     # Display week
     <%= calendrier(:year => 2012, :month => 5, :day => 25, :start_on_monday => true, :display => :week) do |current_time| %>
+    # Recover Events
     <%= display_events(@events_by_date, current_time, :week) %>
     <%= link_to("Ajouter le #{current_time.day} à #{current_time.hour}h", new_meeting_path) %>
     <% end %>
