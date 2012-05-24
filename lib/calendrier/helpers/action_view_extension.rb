@@ -77,6 +77,7 @@ module Calendrier
       ###
       ##
       #
+      
 
       #option year
       year = options[:year] || Time.now.year

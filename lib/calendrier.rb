@@ -12,3 +12,5 @@ module Calendrier
     ::ActionController::Base.send :include, Calendrier::ActionControllerExtension
   end
 end
+
+
