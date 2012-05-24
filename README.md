@@ -27,12 +27,31 @@ It allows to display events.
     # Add to controller
     # app/controllers/home_controller.rb
     
-    # Sort events by date
-    @events_by_date = sort_events(@events)
-    
+
+  
     # Affect all events
     @events = Meeting.all
     
+    # Schema Meeting
+    
+    create_table "meetings", :force => true do |t|
+      t.string   "title"
+      t.text     "content"
+      t.datetime "begin_date"
+      t.datetime "end_date"
+      t.string   "meeting_type"
+      t.datetime "created_at",   :null => false
+      t.datetime "updated_at",   :null => false
+    end
+    
+    # Construction table
+    # An event respond to a year, a month and a day
+    
+    events_by_date[current_date.year.to_s][current_date.month.to_s][current_date.day.to_s] << event
+    
+    # Sort events by date
+    @events_by_date = sort_events(@events)
+       
     # For example :
     # db/migrate/seeds.rb
     
