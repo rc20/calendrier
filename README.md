@@ -27,8 +27,6 @@ It allows to display events.
     # Add to controller
     # app/controllers/home_controller.rb
     
-
-  
     # Affect all events
     @events = Meeting.all
     
@@ -81,7 +79,8 @@ Or install it yourself as:
 
 ##AUTHORS
 
-Romain Castel <br />
+Romain Castel
+
 Thomas Kienlen
 
 ##USAGE
