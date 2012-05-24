@@ -7,6 +7,9 @@ It allows to display events.
 
 ##SYNOPSIS:
 
+    #Add to view
+    #app/views/home/index.html.erb
+
     # Display month
     <%= calendrier(:year => 2012, :month => 5, :day => 25, :start_on_monday => true) do |current_time| %>
       <%= display_events(@events_by_date, current_time, :month) %>
@@ -21,8 +24,20 @@ It allows to display events.
       <%= link_to("Ajouter le #{current_time.day} à #{current_time.hour}h", new_meeting_path) %>
     <% end %>
 
-        
+    #Add to controller
+    #app/controllers/home_controller.rb
+    
+    @events_by_date = sort_events(@events)
+    
+    #For example :
+    
+    #Event of journey
+    @events = [{ :year => 2012, :month => 4, :day => 6, :title => 'reunion' }]
 
+    #Events over several days
+    @events = [{ :begin_date => 12.days.ago.to_i, :end_date => 9.days.ago.to_i, :title => 'suivi qui dure' }]
+    
+    
 Events could be a mix of many different objects, but each of them should `respond_to?` one of the following method sets :
 
   * `year`, `month`, `day`
