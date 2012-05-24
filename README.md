@@ -27,16 +27,17 @@ It allows to display events.
     # Add to controller
     # app/controllers/home_controller.rb
     
-    # sort events by date
+    # Sort events by date
     @events_by_date = sort_events(@events)
     
-    # For example :
+    # Affect all events
+    @events = Meeting.all
     
-    # Event of journey
-    @events = [{ :year => 2012, :month => 4, :day => 6, :title => 'reunion' }]
-
-    # Events over several days
-    @events = [{ :begin_date => 12.days.ago.to_i, :end_date => 9.days.ago.to_i, :title => 'suivi qui dure' }]
+    # For example :
+    # db/migrate/seeds.rb
+    
+    # Create event for specific period
+    Meeting.create(:title => 'formation', :begin_date => Time.new(2012,5,21,14,10), :end_date => Time.new(2012,5,24,15,50), :meeting_type => 'formation')
     
     
 Events could be a mix of many different objects, but each of them should `respond_to?` one of the following method sets :
