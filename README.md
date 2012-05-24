@@ -7,60 +7,45 @@ It allows to display events.
 
 ##SYNOPSIS:
 
-    # Add to view
-    # app/views/home/index.html.erb
+A method to sort out an array of events is availlable in your controllers. 
+To use that method, Events could be a mix of many different objects, but each of them should `respond_to?` one of the following method sets :
 
-    # Display month
-    <%= calendrier(:year => 2012, :month => 5, :day => 25, :start_on_monday => true) do |current_time| %>
-      <%= display_events(@events_by_date, current_time, :month) %>
-      # Add an event into current month
-      <%= link_to("Ajouter le #{current_time.day}", new_meeting_path) %>
-    <% end %>
+  * `year`, `month`, `day`
+  * `begin_date`, `end_date`
 
-    # Display week
-    <%= calendrier(:year => 2012, :month => 5, :day => 25, :start_on_monday => true, :display => :week) do |current_time| %>
-      <%= display_events(@events_by_date, current_time, :week) %>
-      # Add an event into current week
-      <%= link_to("Ajouter le #{current_time.day} à #{current_time.hour}h", new_meeting_path) %>
-    <% end %>
-
-    # Add to controller
+In your controller :
     # app/controllers/home_controller.rb
     
     # Affect all events
     @events = Meeting.all
+    @events << Appointment.all
     
-    # Schema Meeting
-    
-    create_table "meetings", :force => true do |t|
-      t.string   "title"
-      t.text     "content"
-      t.datetime "begin_date"
-      t.datetime "end_date"
-      t.string   "meeting_type"
-      t.datetime "created_at",   :null => false
-      t.datetime "updated_at",   :null => false
-    end
-    
-    # Construction table
-    # An event respond to a year, a month and a day
-    
-    events_by_date[current_date.year.to_s][current_date.month.to_s][current_date.day.to_s] << event
-    
-    # Sort events by date
+    # Prepare Hash of events sorted by date, for later use inside cells.
     @events_by_date = sort_events(@events)
-       
-    # For example :
-    # db/migrate/seeds.rb
     
-    # Create event for specific period
-    Meeting.create(:title => 'formation', :begin_date => Time.new(2012,5,21,14,10), :end_date => Time.new(2012,5,24,15,50), :meeting_type => 'formation')
-    
-    
-Events could be a mix of many different objects, but each of them should `respond_to?` one of the following method sets :
 
-  * `year`, `month`, `day`
-  * `begin_date`, `end_date`
+
+A method is provided to display events, it takes as first argument a Hash like this :
+    events_by_date => {"2012"=>{"5"=>{"21"=>[#<Event>, #<Event>]}}}
+Such Hash is returned by `sort_events` method.
+
+In your view :
+    # app/views/home/index.html.erb
+
+    # Display monthly calendar
+    <%= calendrier(:year => 2012, :month => 5, :day => 25, :start_on_monday => true) do |current_time| %>
+      # you may use the following method to display events of the current day 
+      <%= display_events(@events_by_date, current_time, :month) %>
+      # For example, add an event into current day cell
+      <%= link_to("Add meeting at #{current_time.day}/#{current_time.month}", new_meeting_path) %>
+    <% end %>
+
+    # Display weekly calendar
+    <%= calendrier(:year => 2012, :month => 5, :day => 25, :start_on_monday => true, :display => :week) do |current_time| %>
+      <%= display_events(@events_by_date, current_time, :week) %>
+      <%= link_to("Add meeting at #{current_time.hour}h", new_meeting_path) %>
+    <% end %>
+    
 
 ##INSTALLATION
 
@@ -70,7 +55,7 @@ Add this line to your application's Gemfile:
 
 And then execute:
 
-    $ bundle
+    $ bundle install
 
 Or install it yourself as:
 

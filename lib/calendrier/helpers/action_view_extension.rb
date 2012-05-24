@@ -54,14 +54,14 @@ module Calendrier
         #if display event
         if ok     
           event_content = display_event(event)
-        if cell_sub_content.nil?
-          cell_sub_content = event_content
-        else
-          cell_sub_content << event_content
+          if cell_sub_content.nil?
+            cell_sub_content = event_content
+          else
+            cell_sub_content << event_content
+          end
         end
+       end
       end
-     end
-    end
  
       #create content cell
       cell_content = content_tag(:ul, cell_sub_content) unless cell_sub_content.nil?
