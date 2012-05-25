@@ -14,6 +14,7 @@ To use that method, Events could be a mix of many different objects, but each of
   * `begin_date`, `end_date`
 
 In your controller :
+
     # app/controllers/home_controller.rb
     
     # Affect all events
@@ -30,6 +31,7 @@ A method is provided to display events, it takes as first argument a Hash like t
 Such Hash is returned by `sort_events` method.
 
 In your view :
+
     # app/views/home/index.html.erb
 
     # Display monthly calendar
