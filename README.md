@@ -27,7 +27,9 @@ In your controller :
 
 
 A method is provided to display events, it takes as first argument a Hash like this :
+
     events_by_date => {"2012"=>{"5"=>{"21"=>[#<Event>, #<Event>]}}}
+    
 Such Hash is returned by `sort_events` method.
 
 In your view :
